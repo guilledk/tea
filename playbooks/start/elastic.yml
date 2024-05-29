@@ -1,0 +1,52 @@
+---
+- name: Template Elasticsearch configuration file
+  template:
+    src: ./templates/es/elasticsearch.yml.j2
+    dest: ./configs/elasticsearch.yml
+
+- name: Build Elasticsearch docker image
+  shell: docker build -t '{{ es.image }}' templates/es --progress=plain >> '{{ logs_dir }}'/build.log 2>&1
+
+- name: Get Elasticsearch container info
+  docker_container_info:
+    name: '{{ es.name }}'
+  register: es_info
+  ignore_errors: true
+
+- name: Print information about container
+  debug:
+    var: es_info.container
+  when: es_info.exists
+
+- name: Start Elasticsearch container
+  docker_container:
+    name: '{{ es.name }}'
+    image: '{{ es.image }}'
+    network_mode: host
+    state: started
+    restart_policy: always
+    user: root
+    env:
+      discovery.type: single-node
+      node.name: es01
+      bootstrap.memory_lock: 'true'
+      xpack.security.enabled: 'false'
+      ES_JAVA_OPTS: '-Xms2g -Xmx2g'
+      # ES_NETWORK_HOST: 0.0.0.0
+
+    volumes:
+      - ./configs/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+
+    mounts:
+      - source: '{{ data_dir }}/es'
+        target: /home/elasticsearch/data
+        type: bind
+
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsSL {{ es_endpoint }}/_cluster/health | grep -q "status":"green"']
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+
+  when: not es_info.exists or es_info.container.State.Running == false or es_info.container.State.Health.Status != 'healthy'

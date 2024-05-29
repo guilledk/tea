@@ -1,0 +1,67 @@
+agent-name = {{ leap.ini.agent_name }}
+
+wasm-runtime = {{ leap.ini.wasm_runtime }}
+eos-vm-oc-compile-threads = {{ leap.ini.vm_oc_compile_threads }}
+eos-vm-oc-enable = {{ leap.ini.vm_oc_enable }}
+read-only-read-window-time-us = {{ leap.ini.read_window_time }}
+
+chain-state-db-size-mb = {{ leap.ini.chain_state_size }}
+enable-account-queries = {{ leap.ini.account_queries }}
+
+http-server-address = {{ leap_http_addr }}
+access-control-allow-origin = {{ leap.ini.allow_origin }}
+contracts-console = {{ leap.ini.contracts_console }}
+http-validate-host = {{ leap.ini.http_validate_host }}
+p2p-listen-endpoint = {{ leap_p2p_addr }}
+verbose-http-errors = {{ leap.ini.http_verbose_error }}
+abi-serializer-max-time-ms = {{ leap.ini.abi_serializer_max_time }}
+http-max-response-time-ms = {{ leap.ini.http_max_response_time }}
+
+state-history-endpoint = {{ leap_ship_addr }}
+trace-history = {{ leap.ini.trace_history }}
+chain-state-history = {{ leap.ini.chain_history }}
+trace-history-debug-mode = {{ leap.ini.history_debug_mode }}
+state-history-dir = {{ leap.ini.history_dir }}
+
+sync-fetch-span = {{ leap.ini.sync_fetch_span }}
+max-clients = {{ leap.ini.max_clients }}
+
+disable-subjective-billing = {{ leap.ini.disable_subjective_billing }}
+max-transaction-time = {{ leap.ini.max_transaction_time }}
+
+{% if node_type == 'local' %}
+
+signature-provider = {{ leap.ini.sig_provider }}
+
+p2p-max-nodes-per-host = {{ leap.ini.p2p_max_nodes }}
+
+connection-cleanup-period = {{ leap.ini.cleanup_period }}
+allowed-connection = {{ leap.ini.allowed_connection }}
+max-body-size = {{ leap.ini.http_max_body_size }}
+
+enable-stale-production = {{ leap.ini.enable_stale_production }}
+
+{% endif %}
+
+# optional subst config
+{% if leap.subst_type == 'by-name' %}
+
+subst-by-name = eosio.evm:{{ leap.subst_by_name }}
+
+{% elif leap.subst_type == 'by-manifest' %}
+
+subst-manifest = {{ leap.subst_by_manifest }}
+
+{% endif %}
+
+# plugins
+{% for plugin in leap.ini.plugins %}
+plugin = {{ plugin }}
+{% endfor %}
+
+{% if config.ini.peers is defined and config.ini.peers %}
+# peer list
+{% for peer in leap.ini.peers %}
+p2p-peer-address = {{ peer }}
+{% endfor %}
+{% endif %}

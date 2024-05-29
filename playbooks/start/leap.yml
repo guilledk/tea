@@ -1,0 +1,82 @@
+---
+- name: Template Leap configuration file
+  template:
+    src: ./templates/leap/config.ini.j2
+    dest: ./configs/config.ini
+
+- name: Build Leap docker image
+  shell: docker build -t '{{ leap.image }}' templates/leap --progress=plain >> '{{ logs_dir }}'/build.log 2>&1
+
+- name: Get Leap container info
+  docker_container_info:
+    name: '{{ leap.name }}'
+  register: leap_info
+  ignore_errors: true
+
+- name: Print information about container
+  debug:
+    var: leap_info.container
+  when: leap_info.exists
+
+- name: Start Leap container
+  docker_container:
+    name: '{{ leap.name }}'
+    image: '{{ leap.image }}'
+    network_mode: host
+    state: started
+    restart_policy: no
+    stop_signal: SIGINT
+    volumes:
+      - ./configs/config.ini:/root/config.ini
+    mounts:
+      - source: '{{ data_dir }}/leap'
+        target: /root/data
+        type: bind
+      - source: '{{ logs_dir }}'
+        target: /root/logs
+        type: bind
+      - source: '{{ playbook_dir }}/templates/leap/contracts'
+        target: /root/contracts
+        type: bind
+      - source: '{{ playbook_dir }}/templates/leap/genesis'
+        target: /root/genesis
+        type: bind
+
+    command: >
+      /bin/bash -c "\
+        exec {{ leap.binary }} \
+          --config=/root/config.ini \
+          --data-dir=/root/data \
+          --logconf=/root/logging.json \
+          {% if 'eosio::state_history_plugin' in leap.ini.plugins %} \
+            --disable-replay-opts \
+          {% endif %} \
+          {% if not is_leap_relaunch %} \
+            {% if leap.snapshot is defined %} \
+              --snapshot={{ leap.snapshot }} \
+            {% elif leap.genesis is defined %} \
+              --genesis-json=/root/genesis/{{ leap.genesis }} \
+            {% endif %} \
+          {% endif %} \
+          {% if not leap.use_resource_monitor %} \
+            --resource-monitor-not-shutdown-on-threshold-exceeded \
+          {% endif %} \
+          {% if leap.is_producer %} \
+            -e -p eosio \
+          {% endif %} \
+          {% if leap.subst_admin_apis %} \
+            --subst-admin-apis \
+          {% endif %} \
+          {% if leap.override_tx_time is defined %} \
+            --override-max-tx-time={{ leap.override_tx_time }} \
+          {% endif %} \
+        >> /root/logs/{{ leap.log_file }} 2>&1"
+
+    healthcheck:
+      test: ['CMD-SHELL', 'cleos --url={{ leap_http_endpoint }} get info >/dev/null 2>&1']
+      interval: 10s
+      retries: 10
+      start_period: 30s
+      timeout: 120s
+
+  when: not leap_info.exists or (leap_info.container.State.Running == false) or (leap_info.container.State.Health.Status != 'healthy')
