@@ -1,4 +1,5 @@
 .venv
+config.yml
 configs
 data
 logs

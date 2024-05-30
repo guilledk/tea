@@ -30,15 +30,15 @@
           translator_ws_uri: 'ws://127.0.0.1:{{ translator.ws_port }}/evm'
 
           leap_remote_endpoint: >-
-              {% if node_type == 'local' %}
-                'http://127.0.0.1:{{ leap.ini.http_port }}'
-              {% elif node_type == 'mainnet' %}
-                'http://mainnet.telos.net'
-              {% elif node_type == 'testnet' %}
-                'http://testnet.telos.net'
-              {% else %}
-                undefined
-              {% endif %}
+            {%- if node_type == 'local' -%}
+            http://127.0.0.1:{{ leap.ini.http_port }}
+            {%- elif node_type == 'mainnet' -%}
+            http://mainnet.telos.net
+            {%- elif node_type == 'testnet' -%}
+            http://testnet.telos.net
+            {%- else -%}
+            undefined
+            {%- endif -%}
 
     - name: Create configs directory
       file:

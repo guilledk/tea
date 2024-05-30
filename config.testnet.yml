@@ -1,0 +1,220 @@
+#
+# general node-wide settings
+#
+
+
+node_name: telos-evm-testnet-tea
+node_type: testnet
+
+data_dir: '{{ playbook_dir }}/data'
+logs_dir: '{{ playbook_dir }}/logs'
+
+
+#
+# per service configs
+#
+
+
+redis:
+  name: '{{ node_name }}-redis'
+  image: redis:7
+
+  host: 127.0.0.1
+  port: 6379
+
+
+es:
+  name: '{{ node_name }}-elastic'
+  image: telos-evm:es-8.13.4
+
+  log_file: elastic.log
+
+  cluster_name: '{{ node_name }}_local_cluster'
+  host: 127.0.0.1
+  port: 9200
+
+
+leap:
+  name: '{{ node_name }}-leap'
+  image: telos-evm:leap-4.0.6-subst
+
+  log_file: leap.log
+
+  # run cmd
+  binary: nodeos
+
+  genesis: testnet.json
+  snapshot: /telos-testnet-snapshot-evm-deploy.bin
+
+  use_resource_monitor: true
+  is_producer: true
+  subst_admin_apis: true
+  override_tx_time: 500
+
+  # substitution
+  subst_type: by-manifest
+  subst_by_name: /root/contracts/eosio.evm/regular/regular.wasm
+  subst_by_manifest: http://evmwasms.s3.amazonaws.com/subst.json
+
+  chain_id: 1eaa0824707c8c16bd25145493bf062aecddfeb56c736f6ba6397f3195f33c9f
+
+  ini:
+    agent_name: Telos Sample Node
+
+    # network
+    http_host: 127.0.0.1
+    http_port: 8888
+
+    ship_host: 127.0.0.1
+    ship_port: 29999
+
+    p2p_host: 127.0.0.1
+    p2p_port: 9876
+
+    allow_origin: "*"
+    http_validate_host: false
+    http_verbose_error: true
+    http_max_body_size: 100000000
+    http_max_response_time: 100000
+    sync_fetch_span: 2000
+    max_clients: 250
+    p2p_max_nodes: 1
+    cleanup_period: 30
+    allowed_connection: any
+
+    # runtime
+    wasm_runtime: eos-vm-jit
+    vm_oc_compile_threads: 4
+    vm_oc_enable: true
+    read_window_time: 2000000
+    chain_state_size: 65536
+    abi_serializer_max_time: 2000000
+    disable_subjective_billing: true
+    max_transaction_time: 500
+
+    # api
+    account_queries: true
+    contracts_console: true
+    trace_history: true
+    chain_history: true
+    history_debug_mode: true
+    history_dir: state-history
+    sig_provider: EOS5GnobZ231eekYUJHGTcmy2qve1K23r5jSFQbMfwWTtPB7mFZ1L=KEY:5Jr65kdYmn33C3UabzhmWDm2PuqbRfPuDStts3ZFNSBLM7TqaiL
+    enable_stale_production: true
+
+    # plugins
+    plugins:
+      - eosio::http_plugin
+      - eosio::chain_api_plugin
+      - eosio::state_history_plugin
+
+    peers:
+      - testnet2.telos.eosusa.news:59877
+      - node1.testnet.telosglobal.io:9876
+      - basho.eos.barcelona:9899
+      - sslapi.teloscentral.com:9875
+      - 145.239.133.188:5566
+      - testnet.telos.eclipse24.io:6789
+      - p2p.telos.testnet.detroitledger.tech:30001
+      - basho-p2p.telosuk.io:19876
+      - telos-testnet.atticlab.net:7876
+      - testnet.eossweden.eu:8022
+      - testnet.telos.cryptosuvi.io:2223
+      - p2p-test.tlos.goodblock.io:9876
+      - telosapi.eosmetal.io:59877
+      - 207.148.6.75:9877
+      - telosgermany-testnet.genereos.io:9876
+      - 176.9.86.214:9877
+      - peer1-telos-testnet.eosphere.io:9876
+      - testnet.telos.africa:9875
+      - p2p.testnet.telosgreen.com:9876
+      - testnet2p2p.telosarabia.net:9876
+      - 157.230.29.117:9876
+      - test.telos.kitchen:9876
+      - prod.testnet.bp.teleology.world:9876
+      - telos-testnet.eoscafeblock.com:9879
+      - p2p.basho.telos.dutcheos.io:7654
+      - testnet-b.telos-21zephyr.com:9876
+      - p2p.testnet.telosunlimited.io:9876
+      - peer.tlostest.alohaeos.com:9876
+      - 52.175.222.202:9877
+      - testnet2.telos.eosindex.io:9876
+      - basho.sofos.network:9876
+      - 85.152.18.129:39876
+      - telostestnet.ikuwara.com:9876
+      - p2p.testnet.nytelos.com:8012
+      - telos.basho.eosdublin.io:9876
+      - telos-testnet.cryptolions.io:9871
+      - api.basho.eostribe.io:9880
+      - p2p-telos-testnet.hkeos.com:59876
+      - t-seed.teloskorea.com:19876
+      - telos.testnet.boid.animus.is:3535
+      - telos.testnet.boid.animus.is:5050
+      - kandaweather-testnet.ddns.net:8765
+      - telos-testnet.eosio.cr:9879
+      - testnet.dailytelos.net:9877
+      - testnet.telos.goodblock.io:9876
+
+
+translator:
+  name: '{{ node_name }}-translator'
+  image: telos-evm:translator-1.1.0
+
+  log_file: translator.log
+  log_level: debug
+  reader_log_level: info
+
+  # network
+  ws_host: 127.0.0.1
+  ws_port: 7300
+
+  chain_id: 41
+  irreversible_only: 'false'
+
+  start_block: 136393814
+  stop_block: -1
+  block_delta: 57
+  prev_hash: 3ba6f4ac4f5b74e8e62622b9d8c75d1e4ad10abb3b7e4770cbab7338a861a4f9
+  validate_hash: 4547a4fa2a6ced6cf96a86d01419a25fef9d8931f85dc8e2610119a53df15819
+
+  # perf
+  block_hist_size: 1800
+  stall_counter: 5
+  reader_workers: 1
+  evm_workers: 4
+
+  es:
+    dump_size: 2000
+    req_timeout: 480000
+    docs_per_index: 10000000
+    scroll_size: 6000
+    scroll_window: 8s
+    num_of_shards: 1
+    num_of_replicas: 0
+    refresh_interval: -1
+    codec: best_compression
+    suffix:
+      delta: delta-v1.5
+      transaction: action-v1.5
+      error: error-v1.5
+      fork: fork-v1.5
+
+
+rpc:
+  name: '{{ node_name }}-rpc'
+  image: telos-evm:rpc-1.1.8
+
+  log_file: rpc.log
+
+  # network
+  host: 127.0.0.1
+  port: 7000
+
+  ws_host: 127.0.0.1
+  ws_port: 7400
+
+  debug: 'true'
+
+  signer_account: rpc.evm
+  signer_permission: active
+  signer_key: 5Jr65kdYmn33C3UabzhmWDm2PuqbRfPuDStts3ZFNSBLM7TqaiL

@@ -27,7 +27,7 @@
     },
 
     "elastic": {
-        "node": {{ es_endpoint }},
+        "node": "{{ es_endpoint }}",
         "requestTimeout": {{ translator.es.req_timeout }},
         "docsPerIndex": {{ translator.es.docs_per_index }},
         "scrollSize": {{ translator.es.scroll_size }},
@@ -45,7 +45,7 @@
     },
 
     "broadcast": {
-        "wsHost": {{ translator.ws_host }},
+        "wsHost": "{{ translator.ws_host }}",
         "wsPort": {{ translator.ws_port }}
     }
 }

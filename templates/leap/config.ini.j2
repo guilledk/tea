@@ -59,9 +59,7 @@ subst-manifest = {{ leap.subst_by_manifest }}
 plugin = {{ plugin }}
 {% endfor %}
 
-{% if config.ini.peers is defined and config.ini.peers %}
 # peer list
-{% for peer in leap.ini.peers %}
+{% for peer in leap.ini.peers | default([]) %}
 p2p-peer-address = {{ peer }}
 {% endfor %}
-{% endif %}
