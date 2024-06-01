@@ -32,6 +32,15 @@ es:
   cluster_name: '{{ node_name }}_local_cluster'
   host: 127.0.0.1
   port: 9200
+  transport_port: 9300
+
+
+kibana:
+  name: '{{ node_name }}-kibana'
+  image: docker.elastic.co/kibana/kibana:8.13.4
+
+  host: 127.0.0.1
+  port: 5601
 
 
 leap:
@@ -50,6 +59,9 @@ leap:
   is_producer: true
   subst_admin_apis: true
   override_tx_time: 500
+
+  skip_init: true
+  evm_contract: 'eosio.evm/receiptless'
 
   # substitution
   subst_type: by-mainnet
@@ -74,13 +86,9 @@ leap:
     allow_origin: "*"
     http_validate_host: false
     http_verbose_error: true
-    http_max_body_size: 100000000
     http_max_response_time: 100000
     sync_fetch_span: 2000
     max_clients: 250
-    p2p_max_nodes: 1
-    cleanup_period: 30
-    allowed_connection: any
 
     # runtime
     wasm_runtime: eos-vm-jit
@@ -99,8 +107,6 @@ leap:
     chain_history: true
     history_debug_mode: true
     history_dir: state-history
-    sig_provider: EOS5GnobZ231eekYUJHGTcmy2qve1K23r5jSFQbMfwWTtPB7mFZ1L=KEY:5Jr65kdYmn33C3UabzhmWDm2PuqbRfPuDStts3ZFNSBLM7TqaiL
-    enable_stale_production: true
 
     # plugins
     plugins:
@@ -228,3 +234,5 @@ rpc:
   signer_account: rpc.evm
   signer_permission: active
   signer_key: 5Jr65kdYmn33C3UabzhmWDm2PuqbRfPuDStts3ZFNSBLM7TqaiL
+
+  remote_endpoint: http://mainnet.telos.net/evm

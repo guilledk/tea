@@ -12,20 +12,9 @@
         timeout: 120
       with_items:
         - { name: '{{ es.name }}', signal: 'SIGTERM' }
+        - { name: '{{ kibana.name }}', signal: 'SIGTERM' }
         - { name: '{{ redis.name }}', signal: 'SIGQUIT' }
         - { name: '{{ leap.name }}', signal: 'SIGINT' }
         - { name: '{{ translator.name }}', signal: 'SIGINT' }
         - { name: '{{ rpc.name }}', signal: 'SIGKILL' }
-          #      register: result
 
-        #     - name: Wait for containers to exit
-        #       docker_container_info:
-        #         name: '{{ item.name }}'
-        #       with_items: '{{ result.results }}'
-        #       register: container_info
-        # 
-        #     - name: Ensure containers are stopped
-        #       debug:
-        #         msg: 'Container {{ item.item.name }} status: {{ item.containers[0].State.Status }}'
-        #       when: item.containers[0].State.Status == 'exited'
-        #       with_items: '{{ container_info.results }}'

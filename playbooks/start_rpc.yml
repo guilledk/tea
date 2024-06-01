@@ -13,10 +13,10 @@
   register: rpc_info
   ignore_errors: true
 
-- name: Print information about container
-  debug:
-    var: rpc_info.container
-  when: rpc_info.exists
+    # - name: Print information about container
+    #   debug:
+    #     var: rpc_info.container
+    #   when: rpc_info.exists
 
 - name: Start RPC container
   docker_container:

@@ -1,0 +1,31 @@
+---
+- name: Template Kibana configuration file
+  template:
+    src: ./templates/kibana/kibana.yml.j2
+    dest: ./configs/kibana.yml
+
+- name: Get Kibana container info
+  docker_container_info:
+    name: '{{ kibana.name }}'
+  register: kibana_info
+  ignore_errors: true
+
+# - name: Print information about container
+#   debug:
+#     var: kibana_info.container
+#   when: kibana_info.exists
+
+- name: Start Kibana container
+  docker_container:
+    name: '{{ kibana.name }}'
+    image: '{{ kibana.image }}'
+    network_mode: host
+    state: started
+    restart_policy: always
+    volumes:
+      - ./configs/kibana.yml:/usr/share/kibana/config/kibana.yml
+
+    env:
+      ELASTICSEARCH_HOSTS: '{{ es_endpoint }}'
+
+  when: not kibana_info.exists or (kibana_info.container.State.Running == false)

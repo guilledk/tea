@@ -1,6 +1,20 @@
 # Elasticsearch configuration file
+{% if es.discovery_type is defined %}
+discovery.type: {{ es.discovery_type }}
+{% else %}
+discovery.type: single-node
+{% endif %}
+
+bootstrap.memory_lock: true
+
+xpack.security.enabled: false
+
 cluster.name: {{ es.cluster_name }}
+node.name: {{ es.name }}
 network.host: {{ es.host }}
+
+http.port: {{ es.port }}
+transport.port: {{ es.transport_port }}
 
 path:
   logs: /home/elasticsearch/logs

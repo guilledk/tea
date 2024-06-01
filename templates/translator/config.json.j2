@@ -12,10 +12,10 @@
     "wsEndpoint": "{{ leap_ship_endpoint }}",
 
     "evmBlockDelta": {{ translator.block_delta }},
-    "evmPrevHash": "{% if translator.prev_hash is defined %}{{ translator.prev_hash }}{% endif %}",
-    "evmValidateHash": "{% if translator.validate_hash is defined %}{{ translator.validate_hash }}{% endif %}",
+    "evmPrevHash": "{% if translator_prev_hash is defined %}{{ translator_prev_hash }}{% endif %}",
+    "evmValidateHash": "{% if translator_validate_hash is defined %}{{ translator_validate_hash }}{% endif %}",
 
-    "startBlock": {{ translator.start_block }},
+    "startBlock": {{ translator_start_block }},
     "stopBlock": {% if translator.stop_block is defined %}{{ translator.stop_block }}{% else %}-1{% endif %},
     "irreversibleOnly": {{ translator.irreversible_only }},
     "blockHistorySize": {{ translator.block_hist_size }},

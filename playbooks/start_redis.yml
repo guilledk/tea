@@ -10,10 +10,10 @@
   register: redis_info
   ignore_errors: true
 
-- name: Print information about container
-  debug:
-    var: redis_info.container
-  when: redis_info.exists
+    # - name: Print information about container
+    #   debug:
+    #     var: redis_info.container
+    #   when: redis_info.exists
 
 - name: Start Redis container
   docker_container:
@@ -24,6 +24,12 @@
     restart_policy: always
     volumes:
       - ./configs/redis.conf:/usr/local/etc/redis/redis.conf
+
+    mounts:
+      - source: '{{ data_dir }}/redis'
+        target: /data
+        type: bind
+
     command: ['redis-server', '/usr/local/etc/redis/redis.conf']
     healthcheck:
       test: ['CMD-SHELL', 'redis-cli ping || exit 1']

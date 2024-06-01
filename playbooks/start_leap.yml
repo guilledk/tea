@@ -13,10 +13,10 @@
   register: leap_info
   ignore_errors: true
 
-- name: Print information about container
-  debug:
-    var: leap_info.container
-  when: leap_info.exists
+    # - name: Print information about container
+    #   debug:
+    #     var: leap_info.container
+    #   when: leap_info.exists
 
 - name: Start Leap container
   docker_container:
@@ -53,7 +53,7 @@
           {% endif %} \
           {% if not is_leap_relaunch %} \
             {% if leap.snapshot is defined %} \
-              --snapshot={{ leap.snapshot }} \
+              --snapshot={{ leap_snapshot }} \
             {% elif leap.genesis is defined %} \
               --genesis-json=/root/genesis/{{ leap.genesis }} \
             {% endif %} \
@@ -80,3 +80,23 @@
       timeout: 120s
 
   when: not leap_info.exists or (leap_info.container.State.Running == false) or (leap_info.container.State.Health.Status != 'healthy')
+
+  register: leap_launch
+
+- name: Maybe perform chain boot sequence
+  leap_sys_init:
+    playbook_vars: "{{ vars }}"
+
+  when: leap_launch.container.State.Health.Status == 'starting' and node_type == 'local'
+
+- name: Wait for sync to start
+  leap_wait_recv:
+    playbook_vars: "{{ vars }}"
+
+  when: leap_launch.container.State.Health.Status == 'starting' and node_type != 'local'
+
+- name: Print information about container
+  debug:
+    var: leap_launch.container
+
+  when: leap_launch.container.State.Health.Status != 'starting'

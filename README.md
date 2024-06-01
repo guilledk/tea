@@ -22,11 +22,12 @@ By default `testnet` & `mainnet` nodes are read-only, set `rpc.signer_*` setting
 ### requires
 
  - `docker`
- - `ansible`
- - `python3`, `python3-requests`
+ - `python3`
 
 ### usage
 
-    ansible-playbook playbooks/tea_up.yml --ask-become-pass
-    ansible-playbook playbooks/tea_down.yml --ask-become-pass
+    bash install.sh
+    source activate.sh
+    ansible-playbook tea_up.yml --ask-become-pass
+    ansible-playbook tea_down.yml --ask-become-pass
 

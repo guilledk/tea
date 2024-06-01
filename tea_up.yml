@@ -15,20 +15,24 @@
         path: '{{ data_dir }}/leap/blocks/blocks.log'
       register: leap_data_dir
 
+    - name: Check elastic data directory existence
+      stat:
+        path: '{{ data_dir }}/es'
+      register: es_data_dir
+
     - name: Generate dynamic vars
       set_fact:
           is_leap_relaunch: '{{ leap_data_dir.stat.exists }}'
+          is_es_relaunch: '{{ es_data_dir.stat.exists }}'
 
           es_endpoint: 'http://127.0.0.1:{{ es.port }}'
 
+          leap_log_file: '{{ logs_dir }}/{{ leap.log_file }}'
           leap_http_addr: '{{ leap.ini.http_host }}:{{ leap.ini.http_port }}'
           leap_http_endpoint: 'http://127.0.0.1:{{ leap.ini.http_port }}'
           leap_ship_addr: '{{ leap.ini.ship_host }}:{{ leap.ini.ship_port }}'
           leap_ship_endpoint: 'ws://127.0.0.1:{{ leap.ini.ship_port }}'
           leap_p2p_addr: '{{ leap.ini.p2p_host }}:{{ leap.ini.p2p_port }}'
-
-          translator_ws_uri: 'ws://127.0.0.1:{{ translator.ws_port }}/evm'
-
           leap_remote_endpoint: >-
             {%- if node_type == 'local' -%}
             http://127.0.0.1:{{ leap.ini.http_port }}
@@ -39,6 +43,71 @@
             {%- else -%}
             undefined
             {%- endif -%}
+          leap_snapshot: >-
+            {%- if leap.snapshot is defined -%}
+            {{ leap.snapshot }}
+            {%- else -%}
+            undefined
+            {%- endif -%}
+
+          translator_log_file: '{{ logs_dir }}/{{ translator.log_file }}'
+          translator_start_block: '{{ translator.start_block }}'
+          translator_prev_hash: >-
+            {%- if translator.prev_hash is defined -%}
+            {{ translator.prev_hash }}
+            {%- else -%}
+            undefined
+            {%- endif -%}
+          translator_validate_hash: >-
+            {%- if translator.validate_hash is defined -%}
+            {{ translator.validate_hash }}
+            {%- else -%}
+            undefined
+            {%- endif -%}
+          translator_ws_uri: 'ws://127.0.0.1:{{ translator.ws_port }}/evm'
+
+          rpc_log_file: '{{ logs_dir }}/{{ rpc.log_file }}'
+          rpc_endpoint: 'http://127.0.0.1:{{ rpc.port }}'
+
+    - name: Gather required snapshot
+      leap_snap:
+        download_dir: '{{ data_dir }}/leap/snapshots'
+        block_num: '{{ leap.snapshot }}'
+        network: '{{ node_type }}'
+
+      when: not is_leap_relaunch and not node_type == 'local' and (leap.snapshot == 'latest' or leap.snapshot|int != 0)
+      register: snapshot_info
+
+    - name: Maybe setup snapshot config
+      set_fact:
+          leap_snapshot: '/root/data/snapshots/{{ snapshot_info.result.snap_path }}'
+          translator_start_block: '{{ snapshot_info.result.block_num|int + 1 }}'
+
+      when: snapshot_info is not skipped
+
+    - name: Query Ethereum JSON-RPC endpoint for block header
+      uri:
+        url: '{{ rpc.remote_endpoint }}'
+        method: POST
+        headers:
+          Content-Type: 'application/json'
+        body:
+          jsonrpc: '2.0'
+          method: 'eth_getBlockByNumber'
+          params:
+            - '{{ translator_start_block|int - translator.block_delta }}'
+            - true
+          id: 1
+        body_format: json
+        return_content: yes
+      register: block_header_response
+      when: snapshot_info is not skipped
+
+    - name: Store block header
+      set_fact:
+        translator_prev_hash: '{{ block_header_response.json.result.parentHash | replace("0x", "") }}'
+        translator_validate_hash: '{{ block_header_response.json.result.hash | replace("0x", "") }}'
+      when: block_header_response is not skipped
 
     - name: Create configs directory
       file:
@@ -51,6 +120,7 @@
         state: directory
       with_items:
         - '{{ data_dir }}'
+        - '{{ data_dir }}/redis'
         - '{{ data_dir }}/es'
         - '{{ data_dir }}/leap'
         - '{{ logs_dir }}'
@@ -68,17 +138,54 @@
       when: docker_installed.rc != 0
 
     - name: Ensure redis service is up
-      include_tasks: playbooks/start/redis.yml
+      include_tasks: playbooks/start_redis.yml
 
     - name: Ensure elastic service is up
-      include_tasks: playbooks/start/elastic.yml
+      include_tasks: playbooks/start_elastic.yml
 
     - name: Ensure leap service is up
-      include_tasks: playbooks/start/leap.yml
+      include_tasks: playbooks/start_leap.yml
+
+    - name: Ensure kibana service is up
+      include_tasks: playbooks/start_kibana.yml
 
     - name: Ensure translator service is up
-      include_tasks: playbooks/start/translator.yml
+      include_tasks: playbooks/start_translator.yml
 
     - name: Ensure rpc service is up
-      include_tasks: playbooks/start/rpc.yml
+      include_tasks: playbooks/start_rpc.yml
 
+    - name: Register index patterns
+      uri:
+        url: 'http://127.0.0.1:{{ kibana.port }}/api/data_views/data_view'
+        method: POST
+        headers:
+          kbn-xsrf: "true"
+        body_format: json
+        body: "{{ item }}"
+        status_code: [200, 201]
+      with_items:
+        - data_view:
+            name: '{{ node_name }} blocks'
+            title: '{{ node_name }}-{{ translator.es.suffix.delta }}-*'
+            timeFieldName: '@timestamp'
+
+        - data_view:
+            name: '{{ node_name }} txs'
+            title: '{{ node_name }}-{{ translator.es.suffix.transaction }}-*'
+            timeFieldName: '@timestamp'
+
+        - data_view:
+            name: '{{ node_name }} errors'
+            title: '{{ node_name }}-{{ translator.es.suffix.error }}-*'
+            timeFieldName: 'timestamp'
+
+        - data_view:
+            name: '{{ node_name }} forks'
+            title: '{{ node_name }}-{{ translator.es.suffix.fork }}-*'
+            timeFieldName: 'timestamp'
+
+      retries: 15
+      delay: 3
+
+      when: not is_es_relaunch

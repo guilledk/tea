@@ -13,10 +13,10 @@
   register: es_info
   ignore_errors: true
 
-- name: Print information about container
-  debug:
-    var: es_info.container
-  when: es_info.exists
+    # - name: Print information about container
+    #   debug:
+    #     var: es_info.container
+    #   when: es_info.exists
 
 - name: Start Elasticsearch container
   docker_container:
@@ -27,12 +27,7 @@
     restart_policy: always
     user: root
     env:
-      discovery.type: single-node
-      node.name: es01
-      bootstrap.memory_lock: 'true'
-      xpack.security.enabled: 'false'
       ES_JAVA_OPTS: '-Xms2g -Xmx2g'
-      # ES_NETWORK_HOST: 0.0.0.0
 
     volumes:
       - ./configs/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml

@@ -27,11 +27,18 @@ es:
   name: '{{ node_name }}-elastic'
   image: telos-evm:es-8.13.4
 
-  log_file: elastic.log
-
   cluster_name: '{{ node_name }}_local_cluster'
   host: 127.0.0.1
   port: 9200
+  transport_port: 9300
+
+
+kibana:
+  name: '{{ node_name }}-kibana'
+  image: docker.elastic.co/kibana/kibana:8.13.4
+
+  host: 127.0.0.1
+  port: 5601
 
 
 leap:
@@ -49,6 +56,9 @@ leap:
   is_producer: true
   subst_admin_apis: true
   override_tx_time: 500
+
+  skip_init: false
+  evm_contract: 'eosio.evm/receiptless'
 
   # substitution
   subst_type: by-name
@@ -127,7 +137,7 @@ translator:
   ws_port: 7300
 
   chain_id: 41
-  irreversible_only: false
+  irreversible_only: 'false'
 
   start_block: 2
   stop_block: -1

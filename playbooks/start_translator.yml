@@ -13,10 +13,10 @@
   register: translator_info
   ignore_errors: true
 
-- name: Print information about container
-  debug:
-    var: translator_info.container
-  when: translator_info.exists
+    # - name: Print information about container
+    #   debug:
+    #     var: translator_info.container
+    #   when: translator_info.exists
 
 - name: Wait Elasticsearch up
   shell: curl -fsSL '{{ es_endpoint }}/_cluster/health' | grep -q '"status":"green"'
