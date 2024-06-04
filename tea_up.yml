@@ -55,15 +55,11 @@
           translator_prev_hash: >-
             {%- if translator.prev_hash is defined -%}
             {{ translator.prev_hash }}
-            {%- else -%}
-            undefined
-            {%- endif -%}
+            {%- else -%}{%- endif -%}
           translator_validate_hash: >-
             {%- if translator.validate_hash is defined -%}
             {{ translator.validate_hash }}
-            {%- else -%}
-            undefined
-            {%- endif -%}
+            {%- else -%}{%- endif -%}
           translator_ws_uri: 'ws://127.0.0.1:{{ translator.ws_port }}/evm'
 
           rpc_log_file: '{{ logs_dir }}/{{ rpc.log_file }}'

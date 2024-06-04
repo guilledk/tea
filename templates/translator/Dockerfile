@@ -5,7 +5,7 @@ workdir /root
 run git clone \
     https://github.com/telosnetwork/telosevm-translator.git \
     translator \
-    -b v1.1.0
+    -b v1.2.0-rc1
 
 workdir /root/translator
 

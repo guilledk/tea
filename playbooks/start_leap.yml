@@ -80,23 +80,22 @@
       timeout: 120s
 
   when: not leap_info.exists or (leap_info.container.State.Running == false) or (leap_info.container.State.Health.Status != 'healthy')
-
   register: leap_launch
 
 - name: Maybe perform chain boot sequence
   leap_sys_init:
     playbook_vars: "{{ vars }}"
 
-  when: leap_launch.container.State.Health.Status == 'starting' and node_type == 'local'
+  when: not leap_launch.skipped and leap_launch.container.State.Health.Status == 'starting' and node_type == 'local'
 
 - name: Wait for sync to start
   leap_wait_recv:
     playbook_vars: "{{ vars }}"
 
-  when: leap_launch.container.State.Health.Status == 'starting' and node_type != 'local'
+  when: not leap_launch.skipped and leap_launch.container.State.Health.Status == 'starting' and node_type != 'local'
 
 - name: Print information about container
   debug:
     var: leap_launch.container
 
-  when: leap_launch.container.State.Health.Status != 'starting'
+  when: not leap_launch.skipped and leap_launch.container.State.Health.Status != 'starting'

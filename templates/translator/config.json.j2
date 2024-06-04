@@ -12,8 +12,8 @@
     "wsEndpoint": "{{ leap_ship_endpoint }}",
 
     "evmBlockDelta": {{ translator.block_delta }},
-    "evmPrevHash": "{% if translator_prev_hash is defined %}{{ translator_prev_hash }}{% endif %}",
-    "evmValidateHash": "{% if translator_validate_hash is defined %}{{ translator_validate_hash }}{% endif %}",
+    "evmPrevHash": "{{ translator_prev_hash }}",
+    "evmValidateHash": "{{ translator_validate_hash }}",
 
     "startBlock": {{ translator_start_block }},
     "stopBlock": {% if translator.stop_block is defined %}{{ translator.stop_block }}{% else %}-1{% endif %},
@@ -23,7 +23,8 @@
         "stallCounter": {{ translator.stall_counter }},
         "readerWorkerAmount": {{ translator.reader_workers }},
         "evmWorkerAmount": {{ translator.evm_workers }},
-        "elasticDumpSize": {{ translator.es.dump_size }}
+        "elasticDumpSize": {{ translator.es.dump_size }},
+        "maxPayloadMb": {{ translator.max_ws_payload }}
     },
 
     "elastic": {
