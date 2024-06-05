@@ -185,6 +185,7 @@ translator:
   stall_counter: 5
   reader_workers: 1
   evm_workers: 4
+  max_ws_payload: 2048
 
   es:
     dump_size: 2000

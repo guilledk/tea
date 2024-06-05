@@ -86,16 +86,16 @@
   leap_sys_init:
     playbook_vars: "{{ vars }}"
 
-  when: not leap_launch.skipped and leap_launch.container.State.Health.Status == 'starting' and node_type == 'local'
+  when: leap_launch is defined and leap_launch.container.State.Health.Status == 'starting' and node_type == 'local'
 
 - name: Wait for sync to start
   leap_wait_recv:
     playbook_vars: "{{ vars }}"
 
-  when: not leap_launch.skipped and leap_launch.container.State.Health.Status == 'starting' and node_type != 'local'
+  when: leap_launch is defined and leap_launch.container.State.Health.Status == 'starting' and node_type != 'local'
 
 - name: Print information about container
   debug:
     var: leap_launch.container
 
-  when: not leap_launch.skipped and leap_launch.container.State.Health.Status != 'starting'
+  when: leap_launch is defined and leap_launch.container.State.Health.Status != 'starting'
