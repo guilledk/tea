@@ -1814,7 +1814,7 @@ ripemd-hash = "^1.0.1"
 type = "git"
 url = "https://github.com/guilledk/py-leap.git"
 reference = "v0.1a28"
-resolved_reference = "dcce44fe5d0fe3a79740a9ce97cc7b3eae1646eb"
+resolved_reference = "c405c413fecbdc2d432ff4119383f5d767cd7b6c"
 
 [[package]]
 name = "pycparser"
