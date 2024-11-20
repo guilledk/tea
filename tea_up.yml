@@ -4,6 +4,7 @@
   become: yes
 
   environment:
+    PATH: "{{ lookup('env', 'VIRTUAL_ENV') }}/bin:{{ lookup('env', 'PATH') }}"
     PYTHONPATH: "{{ lookup('env', 'PYTHONPATH') }}"
 
   vars_files:
@@ -77,17 +78,17 @@
         - '{{ data_dir }}/tcc'
         - '{{ logs_dir }}'
 
-    - name: Check if Docker is installed
-      command: docker --version
-      register: docker_installed
-      ignore_errors: yes
-
-    - name: Install Docker
-      apt:
-        name: docker.io
-        state: present
-        update_cache: yes
-      when: docker_installed.rc != 0
+#    - name: Check if Docker is installed
+#      command: docker --version
+#      register: docker_installed
+#      ignore_errors: yes
+#
+#    - name: Install Docker
+#      apt:
+#        name: docker.io
+#        state: present
+#        update_cache: yes
+#      when: docker_installed.rc != 0
 
     - name: Ensure leap service is up
       include_tasks: playbooks/start_leap.yml
