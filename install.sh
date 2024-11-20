@@ -3,7 +3,7 @@
 set -e
 
 # Default installation location
-INSTALL_LOCATION="/usr/local"
+INSTALL_LOCATION="$HOME/.poetry"
 
 # If a parameter is passed, use it as the installation location
 if [ "$#" -eq 1 ]; then

@@ -15,7 +15,7 @@ run apt-get update && \
 
 workdir /
 
-run git clone https://github.com/telosnetwork/telos-consensus-client.git tcc -b telos-v1.0.0-rc5
+run git clone https://github.com/telosnetwork/telos-consensus-client.git tcc -b early_testnet_blocks
 
 workdir /tcc
 
