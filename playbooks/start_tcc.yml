@@ -1,0 +1,48 @@
+---
+- name: Template TCC configuration file
+  template:
+    src: ./templates/tcc/config.toml.j2
+    dest: ./configs/tcc_config.toml
+
+- name: Build TCC docker image
+  shell: docker build -t '{{ tcc.image }}' templates/tcc --progress=plain >> '{{ logs_dir }}'/build.log 2>&1
+
+- name: Get TCC container info
+  docker_container_info:
+    name: '{{ tcc.name }}'
+  register: tcc_info
+  ignore_errors: true
+
+    # - name: Print information about container
+    #   debug:
+    #     var: leap_info.container
+    #   when: leap_info.exists
+
+- name: Start TCC container
+  docker_container:
+    name: '{{ tcc.name }}'
+    image: '{{ tcc.image }}'
+    network_mode: host
+    state: started
+    restart_policy: no
+    stop_signal: SIGINT
+    volumes:
+      - ./configs/tcc_config.toml:/tcc/config.toml
+    env:
+      LOG_PATH: '/logs/{{ tcc.log_file }}'
+    mounts:
+      - source: '{{ data_dir }}/tcc'
+        target: /data
+        type: bind
+      - source: '{{ logs_dir }}'
+        target: /logs
+        type: bind
+
+  when: not tcc_info.exists or (tcc_info.container.State.Running == false) or (tcc_info.container.State.Health.Status != 'healthy')
+  register: tcc_launch
+
+- name: Print information about container
+  debug:
+    var: tcc_info.container
+
+  when: tcc_launch is defined and tcc_info.container.State.Health.Status != 'starting'

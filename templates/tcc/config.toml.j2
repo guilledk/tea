@@ -1,0 +1,35 @@
+# EVM Chain id, Telos mainnet is 40 and testnet is 41
+chain_id = {{ tcc.chain_id }}
+
+# Execution API http endpoint (JWT protected endpoint on reth)
+execution_endpoint = '{{ reth_exec_endpoint }}'
+
+# The JWT secret used to sign the JWT token
+jwt_secret = '{{ reth_jwt_secret }}'
+
+# Nodeos ship ws endpoint
+ship_endpoint = '{{ leap_ship_endpoint }}'
+
+# Nodeos http endpoint
+chain_endpoint = '{{ leap_http_endpoint }}'
+
+# Block count in between finalize block calls while syncing
+batch_size = {{ tcc.batch_size }}
+
+# The parent hash of the start_block
+prev_hash = '{{ tcc.prev_hash }}'
+
+# Start block to start with, should be at or before the first block of the execution node
+evm_start_block = {{ tcc.start_block }}
+
+# (Optional) Expected block hash of the start block
+# validate_hash: Option<String>
+
+# (Optional) Block number to stop on, default is U32::MAX
+#evm_stop_block = 354408792
+
+log_level = '{{ tcc.log_level }}'
+data_path = '/data'
+block_checkpoint_interval = {{ tcc.block_checkpoint_interval }}
+maximum_sync_range = {{ tcc.maximum_sync_range }}
+latest_blocks_in_db_num = {{ tcc.latest_blocks_in_db_num }}

@@ -15,35 +15,44 @@ logs_dir: '{{ playbook_dir }}/logs'
 #
 
 
-redis:
-  name: '{{ node_name }}-redis'
-  image: redis:7
+reth:
+  name: '{{ node_name }}-reth'
+  image: telos-evm:reth-telos-1.0.0
 
-  host: 127.0.0.1
-  port: 6379
+  log_level: info
+  log_file: reth.log
+
+  chain: tevmtestnet
+
+  rpc_port: 9545
+  ws_port: 9546
+  auth_rpc_port: 9551
+  discovery_port: 40303
+
+  sign_account: rpc.evm
+  sign_permission: rpc
+  sign_key: 5KjZqM5UTGmmHByRXZaDM1a5JupgGM9925H3NEroTr6CdEZQDvH
 
 
-es:
-  name: '{{ node_name }}-elastic'
-  image: telos-evm:es-8.13.4
+tcc:
+  name: '{{ node_name }}-tcc'
+  image: telos-evm:tcc-1.0.0
 
-  cluster_name: '{{ node_name }}_local_cluster'
-  host: 127.0.0.1
-  port: 9200
-  transport_port: 9300
+  log_level: info
+  log_file: tcc.log
 
-
-kibana:
-  name: '{{ node_name }}-kibana'
-  image: docker.elastic.co/kibana/kibana:8.13.4
-
-  host: 127.0.0.1
-  port: 5601
+  chain_id: 41
+  batch_size: 1
+  prev_hash: b25034033c9ca7a40e879ddcc29cf69071a22df06688b5fe8cc2d68b4e0528f9
+  start_block: 1
+  block_checkpoint_interval: 1000
+  maximum_sync_range: 100000
+  latest_blocks_in_db_num: 500
 
 
 leap:
   name: '{{ node_name }}-leap'
-  image: telos-evm:leap-4.0.6-subst
+  image: telos-evm:leap-5.0.3
 
   log_file: leap.log
 
@@ -54,18 +63,11 @@ leap:
 
   use_resource_monitor: true
   is_producer: true
-  subst_admin_apis: true
-  override_tx_time: 500
+  evm_contract: eosio.evm/regular
 
   skip_init: false
-  evm_contract: 'eosio.evm/receiptless'
 
-  # substitution
-  subst_type: by-name
-  subst_by_name: /root/contracts/eosio.evm/regular/regular.wasm
-  subst_by_manifest: http://evmwasms.s3.amazonaws.com/subst.json
-
-  chain_id: c4c5fcc7b6e5e7484eb6b609e755050ebba977c4c291a63aab42d94c0fb8c2cf
+  chain_id: 5ef798208828ef4385a9f605066204cc3fb83e33146d868440283d8687a4b0ee
 
   ini:
     agent_name: Telos Sample Node
@@ -115,75 +117,8 @@ leap:
     plugins:
       - eosio::http_plugin
       - eosio::chain_api_plugin
-      - eosio::state_history_plugin
       - eosio::chain_plugin
       - eosio::net_plugin
       - eosio::producer_plugin
       - eosio::producer_api_plugin
       - eosio::state_history_plugin
-      - eosio::subst_api_plugin
-
-
-translator:
-  name: '{{ node_name }}-translator'
-  image: telos-evm:translator-1.1.0
-
-  log_file: translator.log
-  log_level: debug
-  reader_log_level: info
-
-  # network
-  ws_host: 127.0.0.1
-  ws_port: 7300
-
-  chain_id: 41
-  irreversible_only: 'false'
-
-  start_block: 2
-  stop_block: -1
-  block_delta: 0
-  # prev_hash:
-  # validate_hash:
-
-  # perf
-  block_hist_size: 1800
-  stall_counter: 5
-  reader_workers: 1
-  evm_workers: 4
-  max_ws_payload: 2048
-
-  es:
-    dump_size: 1
-    req_timeout: 480000
-    docs_per_index: 10000000
-    scroll_size: 6000
-    scroll_window: 8s
-    num_of_shards: 1
-    num_of_replicas: 0
-    refresh_interval: -1
-    codec: best_compression
-    suffix:
-      delta: delta-v1.5
-      transaction: action-v1.5
-      error: error-v1.5
-      fork: fork-v1.5
-
-
-rpc:
-  name: '{{ node_name }}-rpc'
-  image: telos-evm:rpc-1.1.8
-
-  log_file: rpc.log
-
-  # network
-  host: 127.0.0.1
-  port: 7000
-
-  ws_host: 127.0.0.1
-  ws_port: 7400
-
-  debug: 'true'
-
-  signer_account: rpc.evm
-  signer_permission: active
-  signer_key: 5Jr65kdYmn33C3UabzhmWDm2PuqbRfPuDStts3ZFNSBLM7TqaiL

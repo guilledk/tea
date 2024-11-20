@@ -28,15 +28,15 @@ def main():
 
     node_type: str = playbook_vars.get('node_type')
     chain_id: str = playbook_vars.get('leap').get('chain_id')
-    chain_id_evm: int = int(playbook_vars.get('translator').get('chain_id'))
+    chain_id_evm: int = int(playbook_vars.get('tcc').get('chain_id'))
     cleos_url: str = playbook_vars.get('leap_http_endpoint')
-    cleos_evm_url: str = playbook_vars.get('rpc_endpoint')
+    cleos_evm_url: str = playbook_vars.get('reth_rpc_endpoint')
     log_path: Path = Path(playbook_vars.get('leap_log_file'))
-    translator_start_block: int = int(playbook_vars.get('translator_start_block'))
     skip_init: bool = playbook_vars.get('leap').get('skip_init', False)
     evm_contract: str | None = playbook_vars.get('leap').get('evm_contract', None)
     sig_provider: str | None = playbook_vars.get('leap').get('ini').get('sig_provider', None)
     contracts_dir: Path = Path('./templates/leap/contracts').resolve()
+    start_block: int = playbook_vars.get('tcc').get('start_block', 1)
 
     cleos = CLEOSEVM(
         cleos_url,
@@ -97,10 +97,10 @@ def main():
 
         print(
             'nodeos has started, waiting until blocks.log '
-            f'contains block number {translator_start_block}'
+            f'contains block number {start_block}'
         )
         cleos.wait_block(
-            translator_start_block - 1, progress=True, interval=5)
+            start_block, progress=True, interval=5)
 
         # create funded evm account
         if (node_type == 'local' and

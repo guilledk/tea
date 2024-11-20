@@ -15,37 +15,44 @@ logs_dir: '{{ playbook_dir }}/logs'
 #
 
 
-redis:
-  name: '{{ node_name }}-redis'
-  image: redis:7
+reth:
+  name: '{{ node_name }}-reth'
+  image: telos-evm:reth-telos-1.0.0
 
-  host: 127.0.0.1
-  port: 6379
+  log_level: info
+  log_file: reth.log
+
+  chain: tevmtestnet
+
+  rpc_port: 9545
+  ws_port: 9546
+  auth_rpc_port: 9551
+  discovery_port: 40303
+
+  sign_account: rpc.evm
+  sign_permission: rpc
+  sign_key: 5KjZqM5UTGmmHByRXZaDM1a5JupgGM9925H3NEroTr6CdEZQDvH
 
 
-es:
-  name: '{{ node_name }}-elastic'
-  image: telos-evm:es-8.13.4
+tcc:
+  name: '{{ node_name }}-tcc'
+  image: telos-evm:tcc-1.0.0
 
-  log_file: elastic.log
+  log_level: info
+  log_file: tcc.log
 
-  cluster_name: '{{ node_name }}_local_cluster'
-  host: 127.0.0.1
-  port: 9200
-  transport_port: 9300
-
-
-kibana:
-  name: '{{ node_name }}-kibana'
-  image: docker.elastic.co/kibana/kibana:8.13.4
-
-  host: 127.0.0.1
-  port: 5601
+  chain_id: 41
+  batch_size: 500
+  prev_hash: b25034033c9ca7a40e879ddcc29cf69071a22df06688b5fe8cc2d68b4e0528f9
+  start_block: 1
+  block_checkpoint_interval: 1000
+  maximum_sync_range: 100000
+  latest_blocks_in_db_num: 500
 
 
 leap:
   name: '{{ node_name }}-leap'
-  image: telos-evm:leap-4.0.6-subst
+  image: telos-evm:leap-5.0.3
 
   log_file: leap.log
 
@@ -56,14 +63,6 @@ leap:
   snapshot: /telos-testnet-snapshot-evm-deploy.bin
 
   use_resource_monitor: true
-  is_producer: true
-  subst_admin_apis: true
-  override_tx_time: 500
-
-  # substitution
-  subst_type: by-manifest
-  subst_by_name: /root/contracts/eosio.evm/regular/regular.wasm
-  subst_by_manifest: http://evmwasms.s3.amazonaws.com/subst.json
 
   chain_id: 1eaa0824707c8c16bd25145493bf062aecddfeb56c736f6ba6397f3195f33c9f
 
@@ -157,70 +156,3 @@ leap:
       - telos-testnet.eosio.cr:9879
       - testnet.dailytelos.net:9877
       - testnet.telos.goodblock.io:9876
-
-
-translator:
-  name: '{{ node_name }}-translator'
-  image: telos-evm:translator-1.1.0
-
-  log_file: translator.log
-  log_level: debug
-  reader_log_level: info
-
-  # network
-  ws_host: 127.0.0.1
-  ws_port: 7300
-
-  chain_id: 41
-  irreversible_only: 'false'
-
-  start_block: 136393814
-  stop_block: -1
-  block_delta: 57
-  prev_hash: 3ba6f4ac4f5b74e8e62622b9d8c75d1e4ad10abb3b7e4770cbab7338a861a4f9
-  validate_hash: 4547a4fa2a6ced6cf96a86d01419a25fef9d8931f85dc8e2610119a53df15819
-
-  # perf
-  block_hist_size: 1800
-  stall_counter: 5
-  reader_workers: 1
-  evm_workers: 4
-  max_ws_payload: 2048
-
-  es:
-    dump_size: 2000
-    req_timeout: 480000
-    docs_per_index: 10000000
-    scroll_size: 6000
-    scroll_window: 8s
-    num_of_shards: 1
-    num_of_replicas: 0
-    refresh_interval: -1
-    codec: best_compression
-    suffix:
-      delta: delta-v1.5
-      transaction: action-v1.5
-      error: error-v1.5
-      fork: fork-v1.5
-
-
-rpc:
-  name: '{{ node_name }}-rpc'
-  image: telos-evm:rpc-1.1.8
-
-  log_file: rpc.log
-
-  # network
-  host: 127.0.0.1
-  port: 7000
-
-  ws_host: 127.0.0.1
-  ws_port: 7400
-
-  debug: 'true'
-
-  signer_account: rpc.evm
-  signer_permission: active
-  signer_key: 5Jr65kdYmn33C3UabzhmWDm2PuqbRfPuDStts3ZFNSBLM7TqaiL
-
-  remote_endpoint: http://testnet.telos.net/evm

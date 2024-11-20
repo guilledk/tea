@@ -1,0 +1,63 @@
+---
+- name: Template reth env file
+  template:
+    src: ./templates/reth/env.j2
+    dest: ./configs/reth_env
+
+- name: Build reth docker image
+  shell: docker build -t '{{ reth.image }}' templates/reth --progress=plain >> '{{ logs_dir }}'/build.log 2>&1
+
+- name: Get reth container info
+  docker_container_info:
+    name: '{{ reth.name }}'
+  register: reth_info
+  ignore_errors: true
+
+- name: Print information about container
+  debug:
+    var: reth_info.container
+  when: reth_info.exists
+
+- name: Start reth container
+  docker_container:
+    name: '{{ reth.name }}'
+    image: '{{ reth.image }}'
+    network_mode: host
+    state: started
+    restart_policy: no
+    stop_signal: SIGINT
+    volumes:
+      - ./configs/reth_env:/telos-reth/.env
+    mounts:
+      - source: '{{ data_dir }}/reth'
+        target: /data
+        type: bind
+      - source: '{{ logs_dir }}'
+        target: /logs
+        type: bind
+
+    healthcheck:
+      test: ['CMD-SHELL', 'curl --fail {{ reth_rpc_endpoint }}/health >/dev/null 2>&1']
+      interval: 10s
+      retries: 10
+      start_period: 30s
+      timeout: 120s
+
+  when: not reth_info.exists or (reth_info.container.State.Running == false) or (reth_info.container.State.Health.Status != 'healthy')
+  register: reth_launch
+
+- name: Print information about container
+  debug:
+    var: reth_info.container
+
+  when: reth_launch is defined and reth_info.container.State.Health.Status != 'starting'
+
+- name: Gather JWT token
+  community.docker.docker_container_exec:
+    container: '{{ reth.name }}'
+    command: cat /data/jwt.hex
+  register: reth_cat_jwt
+
+# - name: Prtin token info
+#   debug:
+#     var: reth_cat_jwt

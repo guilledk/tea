@@ -15,17 +15,9 @@
         path: '{{ data_dir }}/leap/blocks/blocks.log'
       register: leap_data_dir
 
-    - name: Check elastic data directory existence
-      stat:
-        path: '{{ data_dir }}/es'
-      register: es_data_dir
-
     - name: Generate dynamic vars
       set_fact:
           is_leap_relaunch: '{{ leap_data_dir.stat.exists }}'
-          is_es_relaunch: '{{ es_data_dir.stat.exists }}'
-
-          es_endpoint: 'http://127.0.0.1:{{ es.port }}'
 
           leap_log_file: '{{ logs_dir }}/{{ leap.log_file }}'
           leap_http_addr: '{{ leap.ini.http_host }}:{{ leap.ini.http_port }}'
@@ -50,20 +42,8 @@
             undefined
             {%- endif -%}
 
-          translator_log_file: '{{ logs_dir }}/{{ translator.log_file }}'
-          translator_start_block: '{{ translator.start_block }}'
-          translator_prev_hash: >-
-            {%- if translator.prev_hash is defined -%}
-            {{ translator.prev_hash }}
-            {%- else -%}{%- endif -%}
-          translator_validate_hash: >-
-            {%- if translator.validate_hash is defined -%}
-            {{ translator.validate_hash }}
-            {%- else -%}{%- endif -%}
-          translator_ws_uri: 'ws://127.0.0.1:{{ translator.ws_port }}/evm'
-
-          rpc_log_file: '{{ logs_dir }}/{{ rpc.log_file }}'
-          rpc_endpoint: 'http://127.0.0.1:{{ rpc.port }}'
+          reth_rpc_endpoint: 'http://127.0.0.1:{{ reth.rpc_port }}'
+          reth_exec_endpoint: 'http://127.0.0.1:{{ reth.auth_rpc_port }}'
 
     - name: Gather required snapshot
       leap_snap:
@@ -81,30 +61,6 @@
 
       when: snapshot_info is not skipped
 
-    - name: Query Ethereum JSON-RPC endpoint for block header
-      uri:
-        url: '{{ rpc.remote_endpoint }}'
-        method: POST
-        headers:
-          Content-Type: 'application/json'
-        body:
-          jsonrpc: '2.0'
-          method: 'eth_getBlockByNumber'
-          params:
-            - '{{ translator_start_block|int - translator.block_delta }}'
-            - true
-          id: 1
-        body_format: json
-        return_content: yes
-      register: block_header_response
-      when: snapshot_info is not skipped
-
-    - name: Store block header
-      set_fact:
-        translator_prev_hash: '{{ block_header_response.json.result.parentHash | replace("0x", "") }}'
-        translator_validate_hash: '{{ block_header_response.json.result.hash | replace("0x", "") }}'
-      when: block_header_response is not skipped
-
     - name: Create configs directory
       file:
         path: configs
@@ -116,9 +72,9 @@
         state: directory
       with_items:
         - '{{ data_dir }}'
-        - '{{ data_dir }}/redis'
-        - '{{ data_dir }}/es'
         - '{{ data_dir }}/leap'
+        - '{{ data_dir }}/reth'
+        - '{{ data_dir }}/tcc'
         - '{{ logs_dir }}'
 
     - name: Check if Docker is installed
@@ -133,55 +89,15 @@
         update_cache: yes
       when: docker_installed.rc != 0
 
-    - name: Ensure redis service is up
-      include_tasks: playbooks/start_redis.yml
-
-    - name: Ensure elastic service is up
-      include_tasks: playbooks/start_elastic.yml
-
     - name: Ensure leap service is up
       include_tasks: playbooks/start_leap.yml
 
-    - name: Ensure kibana service is up
-      include_tasks: playbooks/start_kibana.yml
+    - name: Ensure reth service is up
+      include_tasks: playbooks/start_reth.yml
 
-    - name: Ensure translator service is up
-      include_tasks: playbooks/start_translator.yml
+    - name: Get reth JWT secret
+      set_fact:
+        reth_jwt_secret: '{{ reth_cat_jwt.stdout }}'
 
-    - name: Ensure rpc service is up
-      include_tasks: playbooks/start_rpc.yml
-
-    - name: Register index patterns
-      uri:
-        url: 'http://127.0.0.1:{{ kibana.port }}/api/data_views/data_view'
-        method: POST
-        headers:
-          kbn-xsrf: "true"
-        body_format: json
-        body: "{{ item }}"
-        status_code: [200, 201]
-      with_items:
-        - data_view:
-            name: '{{ node_name }} blocks'
-            title: '{{ node_name }}-{{ translator.es.suffix.delta }}-*'
-            timeFieldName: '@timestamp'
-
-        - data_view:
-            name: '{{ node_name }} txs'
-            title: '{{ node_name }}-{{ translator.es.suffix.transaction }}-*'
-            timeFieldName: '@timestamp'
-
-        - data_view:
-            name: '{{ node_name }} errors'
-            title: '{{ node_name }}-{{ translator.es.suffix.error }}-*'
-            timeFieldName: 'timestamp'
-
-        - data_view:
-            name: '{{ node_name }} forks'
-            title: '{{ node_name }}-{{ translator.es.suffix.fork }}-*'
-            timeFieldName: 'timestamp'
-
-      retries: 15
-      delay: 3
-
-      when: not is_es_relaunch
+    - name: Ensure tcc service is up
+      include_tasks: playbooks/start_tcc.yml

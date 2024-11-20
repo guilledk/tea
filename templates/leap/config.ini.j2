@@ -42,17 +42,6 @@ enable-stale-production = {{ leap.ini.enable_stale_production }}
 
 {% endif %}
 
-# optional subst config
-{% if leap.subst_type == 'by-name' %}
-
-subst-by-name = eosio.evm:{{ leap.subst_by_name }}
-
-{% elif leap.subst_type == 'by-manifest' %}
-
-subst-manifest = {{ leap.subst_by_manifest }}
-
-{% endif %}
-
 # plugins
 {% for plugin in leap.ini.plugins %}
 plugin = {{ plugin }}

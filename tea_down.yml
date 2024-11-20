@@ -11,10 +11,7 @@
         state: stopped
         timeout: 120
       with_items:
-        - { name: '{{ es.name }}', signal: 'SIGTERM' }
-        - { name: '{{ kibana.name }}', signal: 'SIGTERM' }
-        - { name: '{{ redis.name }}', signal: 'SIGQUIT' }
+        - { name: '{{ tcc.name }}', signal: 'SIGINT' }
+        - { name: '{{ reth.name }}', signal: 'SIGINT' }
         - { name: '{{ leap.name }}', signal: 'SIGINT' }
-        - { name: '{{ translator.name }}', signal: 'SIGINT' }
-        - { name: '{{ rpc.name }}', signal: 'SIGKILL' }
 

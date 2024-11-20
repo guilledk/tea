@@ -64,12 +64,6 @@
           {% if leap.is_producer %} \
             -e -p eosio \
           {% endif %} \
-          {% if leap.subst_admin_apis %} \
-            --subst-admin-apis \
-          {% endif %} \
-          {% if leap.override_tx_time is defined %} \
-            --override-max-tx-time={{ leap.override_tx_time }} \
-          {% endif %} \
         >> /root/logs/{{ leap.log_file }} 2>&1"
 
     healthcheck:
@@ -86,16 +80,16 @@
   leap_sys_init:
     playbook_vars: "{{ vars }}"
 
-  when: leap_launch is defined and leap_launch.container.State.Health.Status == 'starting' and node_type == 'local'
+  when: leap_launch is defined and not is_leap_relaunch and node_type == 'local'
 
 - name: Wait for sync to start
   leap_wait_recv:
     playbook_vars: "{{ vars }}"
 
-  when: leap_launch is defined and leap_launch.container.State.Health.Status == 'starting' and node_type != 'local'
+  when: leap_launch is defined and not is_leap_relaunch and node_type != 'local'
 
 - name: Print information about container
   debug:
-    var: leap_launch.container
+    var: leap_info.container
 
-  when: leap_launch is defined and leap_launch.container.State.Health.Status != 'starting'
+  when: leap_launch is defined and leap_info.container.State.Health.Status != 'starting'
