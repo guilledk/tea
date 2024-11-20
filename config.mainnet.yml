@@ -60,10 +60,10 @@ leap:
   binary: nodeos
 
   genesis: mainnet.json
-  snapshot: /telos-mainnet-snapshot-evm-deploy.bin
+  # snapshot: /telos-mainnet-snapshot-evm-deploy.bin
 
   use_resource_monitor: true
-  is_producer: true
+  is_producer: false
 
   skip_init: true
 

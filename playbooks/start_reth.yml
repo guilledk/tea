@@ -46,11 +46,11 @@
   when: not reth_info.exists or (reth_info.container.State.Running == false) or (reth_info.container.State.Health.Status != 'healthy')
   register: reth_launch
 
-- name: Print information about container
-  debug:
-    var: reth_info.container
-
-  when: reth_launch is defined and reth_info.container.State.Health.Status != 'starting'
+# - name: Print information about container
+#   debug:
+#     var: reth_info.container
+# 
+#   when: reth_launch is defined
 
 - name: Gather JWT token
   community.docker.docker_container_exec:

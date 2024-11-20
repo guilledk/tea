@@ -60,9 +60,9 @@ leap:
   binary: nodeos
 
   genesis: testnet.json
-  snapshot: /telos-testnet-snapshot-evm-deploy.bin
 
   use_resource_monitor: true
+  is_producer: false
 
   chain_id: 1eaa0824707c8c16bd25145493bf062aecddfeb56c736f6ba6397f3195f33c9f
 

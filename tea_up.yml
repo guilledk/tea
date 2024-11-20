@@ -51,7 +51,7 @@
         block_num: '{{ leap.snapshot }}'
         network: '{{ node_type }}'
 
-      when: not is_leap_relaunch and not node_type == 'local' and (leap.snapshot == 'latest' or leap.snapshot|int != 0)
+      when: not is_leap_relaunch and not node_type == 'local' and leap.snapshot is defined and (leap.snapshot == 'latest' or leap.snapshot|int != 0)
       register: snapshot_info
 
     - name: Maybe setup snapshot config

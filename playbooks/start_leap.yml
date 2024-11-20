@@ -88,8 +88,8 @@
 
   when: leap_launch is defined and not is_leap_relaunch and node_type != 'local'
 
-- name: Print information about container
-  debug:
-    var: leap_info.container
-
-  when: leap_launch is defined and leap_info.container.State.Health.Status != 'starting'
+# - name: Print information about container
+#   debug:
+#     var: leap_info.container
+# 
+#   when: leap_launch is defined and leap_info.container.State.Health.Status != 'starting'

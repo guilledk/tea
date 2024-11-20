@@ -14,7 +14,7 @@ run apt-get update && \
 
 # install snapshots from latest evm deployments
 workdir /
-run wget http://storage.telos.net/test-resources/telos-mainnet-snapshot-evm-deploy.bin
+# run wget http://storage.telos.net/test-resources/telos-mainnet-snapshot-evm-deploy.bin
 # run wget http://storage.telos.net/test-resources/telos-testnet-snapshot-evm-deploy.bin
 
 # install nodeos

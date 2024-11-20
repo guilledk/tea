@@ -32,7 +32,7 @@ def stream_logs(
         if 'clear_expired_input_' in msg:
             continue
         yield msg
-        print(msg.rstrip())
+        # print(msg.rstrip())
 
     process.stdout.close()
     process.wait()
