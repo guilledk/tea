@@ -25,8 +25,8 @@ By default `testnet` & `mainnet` nodes are read-only, set `reth.sign_*` settings
 
 ### usage
 
-    bash install.sh
-    source activate.sh
-    ansible-playbook tea_up.yml --ask-become-pass
-    ansible-playbook tea_down.yml --ask-become-pass
+    bash install.sh  # this will install uv pkg manager if not found
+
+    uv run ansible-playbook tea_up.yml --ask-become-pass
+    uv run ansible-playbook tea_down.yml --ask-become-pass
 

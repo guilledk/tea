@@ -1,28 +1,40 @@
-[tool.poetry]
-name = 'tea'
-version = '0.1.0-rc1'
-packages = [{include = 'tea', from='src'}]
-description = 'Manage Telos EVM nodes using Ansible'
-authors = ['Guillermo Rodriguez <guillermo@telos.net>']
-license = 'MIT'
-readme = 'README.md'
+[project]
+name = "tea"
+version = "0.1.0-rc1"
+description = "Manage Telos EVM nodes using Ansible"
+authors = [{ name = "Guillermo Rodriguez", email = "guillermo@telos.net" }]
+requires-python = ">=3.10,<4"
+readme = "README.md"
+license = "MIT"
+dependencies = [
+    "rlp==3.0.0",
+    "requests<2.32.0",
+    "ansible>=9.6.0,<10",
+    "ansible-core<2.17.0",
+    "click>=8.1.7,<9",
+    "web3>=6.19.0,<7",
+    "bs4>=0.0.1,<0.0.2",
+    "zstandard>=0.21.0,<0.22",
+    "py-leap",
+]
 
-[tool.poetry.dependencies]
-python = '>=3.10,<4'
+[dependency-groups]
+dev = ["pdbpp>=0.10.3,<0.11"]
 
-rlp = '3.0.0'
-requests = '<2.32.0'
-ansible = '^9.6.0'
-ansible-core = '<2.17.0'
-click = '^8.1.7'
-web3 = '^6.19.0'
-bs4 = {version = '^0.0.1'}
-zstandard = {version = '^0.21.0'}
-py-leap = {git = 'https://github.com/guilledk/py-leap.git', rev = 'v0.1a28'}
+[tool.uv]
 
-[tool.poetry.group.dev.dependencies]
-pdbpp = '^0.10.3'
+[tool.uv.sources]
+py-leap = { git = "https://github.com/openrepublic/py-leap.git", rev = "v0.1a29" }
+
+[tool.hatch.build.targets.sdist]
+include = ["src/tea"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src/tea"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/tea" = "tea"
 
 [build-system]
-requires = ['poetry-core']
-build-backend = 'poetry.core.masonry.api'
+requires = ["hatchling"]
+build-backend = "hatchling.build"
