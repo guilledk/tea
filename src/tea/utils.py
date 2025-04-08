@@ -1,8 +1,15 @@
-#!/usr/bin/env python3
-
+import re
 import time
+import decimal
+import binascii
 import subprocess
 
+from decimal import localcontext
+from typing import (
+    Any,
+    AnyStr,
+    NewType
+)
 from pathlib import Path
 
 
@@ -41,17 +48,6 @@ def stream_logs(
         raise ValueError(
             f'tail returned {process.returncode}\n'
             f'{process.stderr.read().decode("utf-8")}')
-
-import re
-import decimal
-import binascii
-
-from decimal import localcontext
-from typing import (
-    Any,
-    AnyStr,
-    NewType
-)
 
 
 HexStr = NewType('HexStr', str)
@@ -218,8 +214,6 @@ def to_int(
         return int(hexstr, 16)
     elif text is not None:
         return int(text)
-    elif isinstance(primitive, (bytes, bytearray)):
-        return big_endian_to_int(primitive)
     elif isinstance(primitive, str):
         raise TypeError("Pass in strings with keyword hexstr or text")
     elif isinstance(primitive, (int, bool)):
